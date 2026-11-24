@@ -1,6 +1,14 @@
 // 상대 패턴 실행기 (렌더링·DOM과 무관, node에서도 동작)
-// 상대 데이터(opponents.json)의 pattern·attackInterval·guardChance를 읽어
+// 상대 데이터(opponents.json)의 pattern·attackInterval·guardChance·keepAway 등을 읽어
 // "지금 무엇을 할지"만 결정한다. 상태 전이와 판정은 game.js가 맡는다.
+//
+// 상대 데이터에서 읽는 값
+//   pattern        { 공격 id: 가중치 }. 콤보 둘째 타(chainOnly)는 여기 넣지 않는다
+//   attackInterval 예고 시작 → 다음 예고 시작 간격(초, ±15% 흔들림)
+//   maxRepeat      같은 공격을 연속으로 쓸 수 있는 최대 횟수(0 = 제한 없음)
+//   guardChance    가까이 있을 때 가드를 올릴 확률, guardRange 그 거리(기본 340)
+//   preferredRange 서 있고 싶은 거리
+//   keepAway       이 거리보다 가까워지면 뒤로 달아난다(구석에 몰리면 대신 가드)
 
 export class OpponentBrain {
   constructor(def, attackTypes, rng) {
@@ -14,31 +22,39 @@ export class OpponentBrain {
   }
 
   // 상대가 중립 상태일 때 매 프레임 호출. dist = 상대 x - 아저씨 x (양수)
-  // 반환: { move: -1(다가감) | 0 | 1(물러남), guard: bool, attack: 공격 id | null }
-  think(dt, dist) {
+  // 반환: { move: -1(다가감) | 0 | 1(물러남), retreat: bool, guard: bool, attack: 공격 id | null }
+  think(dt, dist, ctx = {}) {
     const d = this.def;
     this.nextAttackIn -= dt;
+    const keep = d.keepAway || 0;
+    const fleeing = keep > 0 && dist < keep && !ctx.cornered;
 
     this.guardTimer -= dt;
     if (this.guardTimer <= 0) {
       this.guardTimer = 0.45 + this.rng() * 0.45;
-      this.guarding = dist < 340 && this.rng() < (d.guardChance ?? 0);
+      this.guarding = dist < (d.guardRange ?? 340) && this.rng() < (d.guardChance ?? 0);
     }
 
     let attack = null;
     if (this.nextAttackIn <= 0) attack = this.pick(dist);
 
     let move = 0;
+    let retreat = false;
     const pref = d.preferredRange ?? 210;
-    if (dist > pref + 20) move = -1;
+    if (fleeing) {
+      move = 1;
+      retreat = true;
+    } else if (dist > pref + 20) move = -1;
     else if (dist < pref - 60) move = 1;
-    return { move, guard: this.guarding && !attack, attack };
+    return { move, retreat, guard: this.guarding && !attack && !fleeing, attack };
   }
 
   // 거리 안에 들어오는 공격 중에서 가중치로 고른다. maxRepeat>0이면 같은 공격 연속 횟수를 제한.
   pick(dist) {
     const pattern = this.def.pattern || {};
-    let cands = Object.entries(pattern).filter(([id, w]) => w > 0 && this.types[id] && dist <= this.types[id].engageRange);
+    let cands = Object.entries(pattern).filter(
+      ([id, w]) => w > 0 && this.types[id] && dist <= this.types[id].engageRange && dist >= (this.types[id].minRange ?? 0)
+    );
     const maxRep = this.def.maxRepeat || 0;
     if (maxRep > 0 && this.history.length >= maxRep) {
       const last = this.history.slice(-maxRep);
@@ -59,6 +75,8 @@ export class OpponentBrain {
 
   // 예고를 시작한 순간. 다음 공격까지의 간격을 다시 잡는다(예고 시작 → 다음 예고 시작 기준).
   onAttackStarted(id) {
+    const t = this.types[id];
+    if (t && t.chainOnly) return; // 콤보 둘째 타는 패턴 기록·간격에 넣지 않는다
     this.history.push(id);
     if (this.history.length > 8) this.history.shift();
     const jitter = 0.85 + this.rng() * 0.3;

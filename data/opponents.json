@@ -1,17 +1,80 @@
 {
   "telegraphs": {
-    "high": { "label": "상단", "color": "#D62B1F", "shape": "triangle", "answer": "duck", "hint": "↓ 숙여!" },
-    "low": { "label": "돌진", "color": "#2F6FE0", "shape": "arrow", "answer": "backstep", "hint": "Shift 물러서!" },
-    "grab": { "label": "잡기", "color": "#F2B632", "shape": "circle", "answer": "headbutt", "hint": "Space 먼저 박아!" }
+    "high": {
+      "label": "상단",
+      "color": "#D62B1F",
+      "shape": "triangle",
+      "answer": "duck",
+      "hint": "↓ 숙여!",
+      "touchHint": "숙여!"
+    },
+    "low": {
+      "label": "돌진",
+      "color": "#2F6FE0",
+      "shape": "arrow",
+      "answer": "backstep",
+      "hint": "Shift 물러서!",
+      "touchHint": "물러서!"
+    },
+    "grab": {
+      "label": "잡기",
+      "color": "#F2B632",
+      "shape": "circle",
+      "answer": "headbutt",
+      "hint": "Space 먼저 박아!",
+      "touchHint": "먼저 박아!"
+    }
   },
+  "tournaments": [
+    {
+      "id": "dong",
+      "name": "동대회",
+      "banner": "제1회 동네 이마 최강자전",
+      "bg": "dong_gym",
+      "stages": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "national",
+      "name": "전국대회",
+      "banner": "전국 이마 선수권 대회",
+      "bg": "national_hall",
+      "stages": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": "world",
+      "name": "세계대회",
+      "banner": "세계 이마 페스티벌",
+      "bg": "world_arena",
+      "stages": [
+        5,
+        6
+      ]
+    },
+    {
+      "id": "champ",
+      "name": "챔피언십",
+      "banner": "월드 박치기 챔피언십",
+      "bg": "champ_dome",
+      "stages": [
+        7
+      ]
+    }
+  ],
   "attackTypes": {
     "hook": {
       "name": "큰 훅",
       "telegraph": "high",
       "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
       "engageRange": 320,
       "closeTo": 250,
-      "damageMul": 1.0,
+      "damageMul": 1,
       "recover": 0.55,
       "lunge": 40
     },
@@ -19,27 +82,340 @@
       "name": "돌진",
       "telegraph": "low",
       "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
       "engageRange": 580,
       "closeTo": 0,
-      "damageMul": 1.0,
+      "damageMul": 1,
       "recover": 0.6,
       "dash": true
     },
     "grab": {
       "name": "잡기",
       "telegraph": "grab",
-      "telegraphPose": "telegraph_low",
+      "telegraphPose": "telegraph_grab",
+      "attackPose": "attack_grab",
       "telegraphTimeMul": 1.1,
       "engageRange": 320,
       "closeTo": 245,
-      "damageMul": 2.0,
+      "damageMul": 2,
       "recover": 0.6,
       "lunge": 60
+    },
+    "ladle_low": {
+      "name": "국자 하단 치기",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "engageRange": 340,
+      "closeTo": 250,
+      "damageMul": 1,
+      "recover": 0.5,
+      "lunge": 50
+    },
+    "ladle_flurry": {
+      "name": "국자 연타",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "engageRange": 340,
+      "closeTo": 250,
+      "damageMul": 0.75,
+      "recover": 0.4,
+      "lunge": 40,
+      "chain": "ladle_flurry_2"
+    },
+    "ladle_flurry_2": {
+      "name": "국자 연타(둘째)",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "chainOnly": true,
+      "telegraphTimeMul": 0.8,
+      "engageRange": 600,
+      "closeTo": 250,
+      "damageMul": 0.75,
+      "recover": 0.5,
+      "lunge": 60
+    },
+    "ladle_high": {
+      "name": "국자 내려치기",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 320,
+      "closeTo": 250,
+      "damageMul": 1,
+      "recover": 0.55,
+      "lunge": 40
+    },
+    "sumo_grab": {
+      "name": "샅바 잡기",
+      "telegraph": "grab",
+      "telegraphPose": "telegraph_grab",
+      "attackPose": "attack_grab",
+      "telegraphTimeMul": 1.1,
+      "engageRange": 330,
+      "closeTo": 245,
+      "damageMul": 1.6,
+      "recover": 0.6,
+      "lunge": 60,
+      "breakDamageMul": 0.35
+    },
+    "sumo_slap": {
+      "name": "손바닥 밀치기",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 320,
+      "closeTo": 250,
+      "damageMul": 1,
+      "recover": 0.55,
+      "lunge": 40
+    },
+    "kick_high": {
+      "name": "돌려차기",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 330,
+      "closeTo": 255,
+      "damageMul": 1,
+      "recover": 0.5,
+      "lunge": 40
+    },
+    "sweep_low": {
+      "name": "앞차기 돌진",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "engageRange": 520,
+      "closeTo": 0,
+      "damageMul": 1,
+      "recover": 0.5,
+      "dash": true
+    },
+    "combo_hl": {
+      "name": "돌려차기→앞차기",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 330,
+      "closeTo": 255,
+      "damageMul": 0.8,
+      "recover": 0.4,
+      "lunge": 30,
+      "chain": "combo_hl_2"
+    },
+    "combo_hl_2": {
+      "name": "앞차기(연속)",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "chainOnly": true,
+      "telegraphTimeMul": 0.85,
+      "engageRange": 600,
+      "closeTo": 0,
+      "damageMul": 0.9,
+      "recover": 0.55,
+      "dash": true
+    },
+    "combo_lh": {
+      "name": "앞차기→돌려차기",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "engageRange": 520,
+      "closeTo": 0,
+      "damageMul": 0.8,
+      "recover": 0.4,
+      "dash": true,
+      "chain": "combo_lh_2"
+    },
+    "combo_lh_2": {
+      "name": "돌려차기(연속)",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "chainOnly": true,
+      "telegraphTimeMul": 0.85,
+      "engageRange": 600,
+      "closeTo": 250,
+      "damageMul": 0.9,
+      "recover": 0.55,
+      "lunge": 40
+    },
+    "lucha_high": {
+      "name": "플라잉 촙",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 330,
+      "closeTo": 255,
+      "damageMul": 1,
+      "recover": 0.5,
+      "lunge": 40
+    },
+    "lucha_low": {
+      "name": "태클",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "engageRange": 560,
+      "closeTo": 0,
+      "damageMul": 1,
+      "recover": 0.55,
+      "dash": true
+    },
+    "lucha_grab": {
+      "name": "복면 잡기",
+      "telegraph": "grab",
+      "telegraphPose": "telegraph_grab",
+      "attackPose": "attack_grab",
+      "telegraphTimeMul": 1.1,
+      "engageRange": 330,
+      "closeTo": 245,
+      "damageMul": 1.6,
+      "recover": 0.6,
+      "lunge": 60
+    },
+    "feint_hl": {
+      "telegraphTimeMul": 1.65,
+      "name": "속임(상단→태클)",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 330,
+      "closeTo": 255,
+      "damageMul": 1,
+      "recover": 0.5,
+      "lunge": 40,
+      "feint": {
+        "to": "lucha_low",
+        "at": 0.35,
+        "remainMul": 1
+      }
+    },
+    "feint_lh": {
+      "telegraphTimeMul": 1.65,
+      "name": "속임(태클→상단)",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "engageRange": 330,
+      "closeTo": 255,
+      "damageMul": 1,
+      "recover": 0.5,
+      "lunge": 40,
+      "feint": {
+        "to": "lucha_high",
+        "at": 0.35,
+        "remainMul": 1
+      }
+    },
+    "feint_hg": {
+      "telegraphTimeMul": 1.65,
+      "name": "속임(상단→잡기)",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 330,
+      "closeTo": 250,
+      "damageMul": 1,
+      "recover": 0.5,
+      "lunge": 40,
+      "feint": {
+        "to": "lucha_grab",
+        "at": 0.35,
+        "remainMul": 1
+      }
+    },
+    "jab": {
+      "name": "잽",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "telegraphTimeMul": 0.9,
+      "engageRange": 320,
+      "closeTo": 245,
+      "damageMul": 0.6,
+      "recover": 0.35,
+      "lunge": 30,
+      "gapMul": 0.55,
+      "counterMul": 0.4
+    },
+    "low_jab": {
+      "name": "몸통 잽",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "telegraphTimeMul": 0.95,
+      "engageRange": 320,
+      "closeTo": 245,
+      "damageMul": 0.6,
+      "recover": 0.35,
+      "lunge": 50,
+      "gapMul": 0.55,
+      "counterMul": 0.4
+    },
+    "throw_trophy": {
+      "name": "트로피 던지기",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 2000,
+      "closeTo": 0,
+      "damageMul": 1,
+      "recover": 0.35,
+      "throw": {
+        "kind": "trophy",
+        "speed": 820
+      },
+      "minRange": 340
+    },
+    "throw_bowling": {
+      "name": "볼링공 굴리기",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "attackPose": "attack_low",
+      "engageRange": 2000,
+      "closeTo": 0,
+      "damageMul": 1,
+      "recover": 0.35,
+      "throw": {
+        "kind": "bowling",
+        "speed": 720
+      },
+      "minRange": 340
+    },
+    "helmet_bash": {
+      "name": "헬멧 들이받기",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 330,
+      "closeTo": 250,
+      "damageMul": 0.8,
+      "recover": 0.4,
+      "lunge": 40,
+      "gapMul": 0
+    },
+    "helmet_bash_open": {
+      "name": "맨머리 들이받기",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "attackPose": "attack_high",
+      "engageRange": 330,
+      "closeTo": 250,
+      "damageMul": 0.8,
+      "recover": 0.5,
+      "lunge": 40,
+      "gapMul": 1
     }
   },
   "opponents": [
     {
       "id": "gwak",
+      "stage": 1,
       "name": "곽두팔",
       "title": "헬스장 관장",
       "tournament": "동대회",
@@ -54,15 +430,273 @@
       "walkSpeed": 140,
       "preferredRange": 270,
       "guardChance": 0.7,
-      "pattern": { "hook": 1 },
+      "pattern": {
+        "hook": 1
+      },
       "maxRepeat": 0,
+      "rewardLevel": 2,
+      "tip": "빨강 ▲ 큰 훅만 쓴다. 숙여서 피하고, 빈틈에 박아라.",
       "quote": "회식은 즐거웠나? 내 훅은 2차보다 독하다.",
       "winQuote": "단백질이 부족하구먼. 내일 아침 6시, 헬스장으로 나와.",
       "loseQuote": "…회원권 석 달 공짜로 줄 테니, 그 이마 좀 연구하게 해 주게."
+    },
+    {
+      "id": "osunja",
+      "stage": 2,
+      "name": "오순자",
+      "title": "반찬가게 사장",
+      "tournament": "동대회",
+      "matchLabel": "동대회 결승",
+      "sprite": "osunja",
+      "spriteFacing": "left",
+      "bg": "dong_gym",
+      "fallback": {
+        "sprite": "gwak",
+        "tint": "#E86A92",
+        "scale": [
+          0.9,
+          0.86
+        ]
+      },
+      "hp": 100,
+      "telegraphTime": 0.9,
+      "attackInterval": 2.6,
+      "damage": 12,
+      "walkSpeed": 150,
+      "preferredRange": 260,
+      "guardChance": 0.75,
+      "pattern": {
+        "ladle_low": 2,
+        "ladle_flurry": 1.3,
+        "ladle_high": 1
+      },
+      "maxRepeat": 3,
+      "rewardLevel": 3,
+      "tip": "국자는 주로 파랑 ▶ 아래로! 물러서기. 가끔 빨강 ▲ 내려치기가 섞인다.",
+      "quote": "총각, 국자 맛 좀 볼래? 오늘 반찬은 이마 조림이야.",
+      "winQuote": "에구, 밥은 먹고 다니는 거야? 깻잎 한 통 싸 줄게.",
+      "loseQuote": "아이고 이마 단단한 거 봐. 우리 가게 단골 해, 응?"
+    },
+    {
+      "id": "mabongchun",
+      "stage": 3,
+      "name": "마봉춘",
+      "title": "전직 씨름선수",
+      "tournament": "전국대회",
+      "matchLabel": "전국대회 준결승",
+      "sprite": "mabongchun",
+      "spriteFacing": "left",
+      "bg": "national_hall",
+      "fallback": {
+        "sprite": "gwak",
+        "tint": "#8A5A2B",
+        "scale": [
+          1.2,
+          1.04
+        ]
+      },
+      "hp": 140,
+      "telegraphTime": 0.7,
+      "attackInterval": 2.5,
+      "damage": 16,
+      "walkSpeed": 120,
+      "preferredRange": 255,
+      "guardChance": 0.92,
+      "stunGuard": true,
+      "pattern": {
+        "sumo_grab": 3,
+        "sumo_slap": 1
+      },
+      "maxRepeat": 3,
+      "rewardLevel": null,
+      "tip": "노랑 ● 잡기는 먼저 박아서 끊는다. 빈틈에도 팔을 안 푸니, 둘째 타가 가드를 뚫는 이환이형(Q)으로!",
+      "quote": "모래판 30년, 이 팔에 안 잡힌 사람 없어. 샅바 대신 넥타이를 잡지.",
+      "winQuote": "허허, 들배지기 한 판이면 끝이지. 다리 힘부터 기르고 와.",
+      "loseQuote": "둘째 방이 팔 사이로 들어오더군… 천하장사도 이건 못 막아."
+    },
+    {
+      "id": "gohoejeon",
+      "stage": 4,
+      "name": "고회전",
+      "title": "태권도 사범",
+      "tournament": "전국대회",
+      "matchLabel": "전국대회 결승",
+      "sprite": "gohoejeon",
+      "spriteFacing": "left",
+      "bg": "national_hall",
+      "fallback": {
+        "sprite": "gwak",
+        "tint": "#F4F1E6",
+        "scale": [
+          0.96,
+          1.02
+        ]
+      },
+      "hp": 140,
+      "telegraphTime": 0.7,
+      "attackInterval": 2.5,
+      "damage": 16,
+      "walkSpeed": 160,
+      "preferredRange": 265,
+      "guardChance": 0.5,
+      "pattern": {
+        "combo_hl": 2,
+        "combo_lh": 2,
+        "kick_high": 1,
+        "sweep_low": 1
+      },
+      "maxRepeat": 2,
+      "rewardLevel": 4,
+      "tip": "빨강 ▲ → 파랑 ▶ 2연속 콤보! 첫 타를 피해도 빈틈이 없다. 둘째까지 피하면 빈틈. 못 읽겠으면 금강불괴(W).",
+      "quote": "차렷, 경례! …그리고 돌려차기. 두 번 찰 거니까 두 번 피해 보시오.",
+      "winQuote": "품새가 엉망이오. 기본 동작부터 다시 하시오.",
+      "loseQuote": "두 번을 다 피하다니… 오늘부로 검은 띠를 드리겠소."
+    },
+    {
+      "id": "frente",
+      "stage": 5,
+      "name": "엘 프렌테",
+      "title": "복면 레슬러",
+      "tournament": "세계대회",
+      "matchLabel": "세계대회 준결승",
+      "sprite": "frente",
+      "spriteFacing": "left",
+      "bg": "world_arena",
+      "fallback": {
+        "sprite": "gwak",
+        "tint": "#2A9D8F",
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "hp": 180,
+      "telegraphTime": 0.55,
+      "attackInterval": 2.2,
+      "damage": 20,
+      "walkSpeed": 170,
+      "preferredRange": 265,
+      "guardChance": 0.85,
+      "pattern": {
+        "lucha_high": 1,
+        "lucha_low": 1,
+        "lucha_grab": 0.5,
+        "feint_hl": 1.1,
+        "feint_lh": 1.1,
+        "feint_hg": 0.6
+      },
+      "maxRepeat": 2,
+      "rewardLevel": null,
+      "tip": "예고가 도중에 바뀐다! 첫 표시에 바로 반응하지 말고 끝까지 보고 피하라. 바뀐 뒤에도 시간은 충분하다.",
+      "quote": "¡Hola! 내 복면 아래 진짜 표정은 아무도 몰라. 내 예고도 마찬가지지.",
+      "winQuote": "¡Adiós! 너무 빨리 믿었어, 아미고.",
+      "loseQuote": "끝까지 보는 남자라니… 복면을 벗을 뻔했어."
+    },
+    {
+      "id": "gregor",
+      "stage": 6,
+      "name": "그레고르",
+      "title": "철벽 가드",
+      "tournament": "세계대회",
+      "matchLabel": "세계대회 결승",
+      "sprite": "gregor",
+      "spriteFacing": "left",
+      "bg": "world_arena",
+      "fallback": {
+        "sprite": "gwak",
+        "tint": "#7C8CA3",
+        "scale": [
+          1.1,
+          1.08
+        ]
+      },
+      "hp": 180,
+      "telegraphTime": 0.55,
+      "attackInterval": 3.4,
+      "damage": 20,
+      "walkSpeed": 110,
+      "preferredRange": 250,
+      "guardChance": 0.97,
+      "guardRange": 420,
+      "guardIron": true,
+      "staggerGuard": true,
+      "pattern": {
+        "jab": 3,
+        "low_jab": 1
+      },
+      "maxRepeat": 3,
+      "rewardLevel": 5,
+      "tip": "거의 항상 가드. 박으면 막히고 잽이 돌아온다. 잽은 피해도 빈틈이 얕다. 스페이스를 1초 꾹 눌러 결재 박치기로 가드를 부숴라!",
+      "quote": "…가드. 가드. 잽. 가드. 내 사전에 빈틈이라는 단어는 없다.",
+      "winQuote": "…가드. 그리고 집으로.",
+      "loseQuote": "가드가… 결재됐다…?"
+    },
+    {
+      "id": "helmet",
+      "stage": 7,
+      "name": "더 헬멧",
+      "title": "세계 챔피언",
+      "tournament": "챔피언십",
+      "matchLabel": "챔피언십 타이틀전",
+      "sprite": "helmet",
+      "spriteFacing": "left",
+      "bg": "champ_dome",
+      "fallback": {
+        "sprite": "gwak",
+        "tint": "#C9A227",
+        "scale": [
+          1,
+          1
+        ]
+      },
+      "hp": 240,
+      "telegraphTime": 0.5,
+      "attackInterval": 1.8,
+      "damage": 22,
+      "walkSpeed": 150,
+      "retreatSpeed": 330,
+      "keepAway": 460,
+      "preferredRange": 640,
+      "guardChance": 0.85,
+      "guardRange": 360,
+      "pattern": {
+        "throw_trophy": 1,
+        "throw_bowling": 1,
+        "helmet_bash": 1.2
+      },
+      "maxRepeat": 2,
+      "helmet": {
+        "hp": 80,
+        "bodyDamageMul": 0.5,
+        "breakStun": 1.6,
+        "breakBy": {
+          "ranged": 1
+        },
+        "after": {
+          "keepAway": 0,
+          "preferredRange": 300,
+          "retreatSpeed": 150,
+          "guardChance": 0.35,
+          "guardUnbreakable": false,
+          "attackInterval": 2,
+          "pattern": {
+            "throw_trophy": 1,
+            "throw_bowling": 1,
+            "helmet_bash_open": 1.2
+          }
+        }
+      },
+      "rewardLevel": null,
+      "tip": "멀리서 던진다. 트로피 빨강 ▲는 숙이고, 볼링공 파랑 ▶은 물러서라. 다가가면 도망가고, 붙으면 헬멧으로 막는다. 헬멧은 원거리 박치기(E)로만 깨진다!",
+      "quote": "가까이 오지 마. 챔피언은 땀 흘리지 않는다. 물건이 대신 흘리지.",
+      "winQuote": "다음 도전자. …아니, 다음 회식 손님인가?",
+      "loseQuote": "내 헬멧을… 이마로 깼다고? 벨트는 당신 겁니다, 과장님.",
+      "guardUnbreakable": true
     }
   ],
   "debugOpponent": {
     "id": "dummy",
+    "stage": 0,
     "name": "곽두팔(대역)",
     "title": "시험용 상대",
     "tournament": "시험장",
@@ -78,8 +712,13 @@
     "walkSpeed": 150,
     "preferredRange": 270,
     "guardChance": 0.5,
-    "pattern": { "hook": 1, "rush": 1, "grab": 1 },
+    "pattern": {
+      "hook": 1,
+      "rush": 1,
+      "grab": 1
+    },
     "maxRepeat": 2,
+    "tip": "빨강·파랑·노랑을 섞어서 낸다. L 키로 레벨을 올려 기술을 시험하라.",
     "quote": "빨강, 파랑, 노랑 다 섞어서 간다. L 키로 레벨을 올려 봐.",
     "winQuote": "시험 종료. 다시 해 보게.",
     "loseQuote": "시험 통과. 예고 3종 확인 완료."

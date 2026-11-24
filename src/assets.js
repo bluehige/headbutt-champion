@@ -1,15 +1,26 @@
 // 이미지 로더.
-// - 포즈 파일이 있으면 쓰고, 없으면 렌더러가 idle(아저씨는 ref_sheet까지)로 대체해 코드 변형을 준다.
+// - 파일이 있으면 쓰고, 없으면 렌더러가 가까운 포즈 + 코드 변형(아이콘·배경은 코드로 그림)으로 대신한다.
 // - 회색 단색 배경 이미지는 모서리 색 기준으로 투명 처리한다(이미 투명하면 그대로).
 //   file:// 처럼 캔버스 픽셀을 읽을 수 없는 환경에서는 처리 없이 원본을 쓴다.
-// - serve.mjs의 /__list 로 폴더 목록을 먼저 확인해 없는 파일 요청(404)을 피한다.
+// - 없는 파일을 요청해 404 콘솔 오류가 나지 않도록, 먼저 폴더 목록을 확인한다.
+//     로컬 개발(localhost, ?static=1 아님): serve.mjs 의 /__list?dir=…
+//     정적 호스팅(GitHub Pages 등): assets/_list.json (폴더 → 파일 목록, tools/make-lists.mjs 로 생성)
+//   목록에 없는 폴더는 비어 있는 것으로 본다(추측 요청을 하지 않음).
+// - 처음에는 타이틀에 필요한 것만, 경기마다 그 상대·배경만 불러온다(lazy).
 
+// 아저씨 포즈
 export const POSE_NAMES = [
   'idle', 'walk', 'duck', 'backstep', 'headbutt_ready', 'headbutt_hit', 'hurt', 'win', 'lose', 'ranged',
   'telegraph_high', 'telegraph_low', 'attack', 'stun',
 ];
+// 상대 포즈(곽두팔은 attack 하나만 있다)
+export const OPP_POSE_NAMES = [
+  'idle', 'telegraph_high', 'attack_high', 'telegraph_low', 'attack_low', 'telegraph_grab', 'attack_grab',
+  'guard', 'stun', 'lose', 'retreat', 'attack', 'win',
+];
 // idle이 없을 때 쓸 기준 이미지
 const BASE_FALLBACKS = ['idle', 'ref_sheet'];
+const KNOWN_POSES = new Set([...POSE_NAMES, ...OPP_POSE_NAMES, ...BASE_FALLBACKS]);
 
 const SPRITE_TARGET_H = 768; // 원본 1536 → 절반으로 줄여 보관(화면에는 약 460px로 그림)
 
@@ -21,28 +32,6 @@ function loadImage(url) {
     img.onerror = () => resolve(null);
     img.src = url;
   });
-}
-
-async function listDir(dir) {
-  try {
-    const res = await fetch(`__list?dir=${encodeURIComponent(dir)}`, { cache: 'no-store' });
-    if (res.ok) {
-      const arr = await res.json();
-      if (Array.isArray(arr)) return arr;
-    }
-  } catch {
-    // 아래 정적 목록으로 넘어간다
-  }
-  // GitHub Pages 같은 정적 호스팅에는 /__list 가 없으므로 폴더 안의 _list.json 을 쓴다
-  // (tools/make-lists.mjs 로 생성).
-  try {
-    const res = await fetch(`${dir}/_list.json`, { cache: 'no-cache' });
-    if (!res.ok) return null;
-    const arr = await res.json();
-    return Array.isArray(arr) ? arr : null;
-  } catch {
-    return null;
-  }
 }
 
 function colorDist2(d, i, r, g, b) {
@@ -134,51 +123,160 @@ function toProcessedCanvas(img, targetH) {
   return c;
 }
 
+const isLocalHost = () => ['localhost', '127.0.0.1', '[::1]', '::1'].includes(location.hostname);
+
 export class Assets {
-  constructor({ onlyBase = false } = {}) {
+  constructor({ onlyBase = false, forceStatic = false } = {}) {
     this.onlyBase = onlyBase; // true면 idle·ref_sheet만 불러옴(대체 변형 확인용, ?nopose=1)
+    this.devList = !forceStatic && isLocalHost() && location.protocol.startsWith('http');
     this.sprites = {}; // id → { pose → canvas }
-    this.bgs = {}; // id → image
+    this.bgs = {}; // id → image | null
+    this.images = {}; // 'ui/skill_double' → canvas | image | null
     this.silCache = new WeakMap();
-    this.listingAvailable = false;
+    this.lists = {}; // dir → Promise<string[]>
+    this.manifest = null; // 정적 목록(assets/_list.json)
+    this.manifestTried = null;
+    this.pending = {}; // 중복 요청 방지
   }
 
-  async loadSprite(id, onProgress) {
+  async loadManifest() {
+    if (!this.manifestTried) {
+      this.manifestTried = (async () => {
+        try {
+          const res = await fetch('assets/_list.json', { cache: 'no-cache' });
+          if (res.ok) {
+            const j = await res.json();
+            if (j && typeof j === 'object' && !Array.isArray(j)) this.manifest = j;
+          }
+        } catch {
+          // 목록이 없으면 아래에서 폴더별 _list.json 을 본다
+        }
+      })();
+    }
+    return this.manifestTried;
+  }
+
+  // 폴더의 파일 목록(없으면 빈 배열)
+  listDir(dir) {
+    if (!this.lists[dir]) {
+      this.lists[dir] = (async () => {
+        if (this.devList) {
+          try {
+            const res = await fetch(`__list?dir=${encodeURIComponent(dir)}`, { cache: 'no-store' });
+            if (res.ok) {
+              const arr = await res.json();
+              if (Array.isArray(arr)) return arr;
+            }
+          } catch {
+            // 정적 목록으로 넘어간다
+          }
+        }
+        await this.loadManifest();
+        if (this.manifest) return Array.isArray(this.manifest[dir]) ? this.manifest[dir] : [];
+        // 옛 배포: 폴더별 _list.json (bg, char/* 만 있었다)
+        if (!(dir === 'assets/bg' || dir.startsWith('assets/char/'))) return [];
+        try {
+          const res = await fetch(`${dir}/_list.json`, { cache: 'no-cache' });
+          if (!res.ok) return [];
+          const arr = await res.json();
+          return Array.isArray(arr) ? arr : [];
+        } catch {
+          return [];
+        }
+      })();
+    }
+    return this.lists[dir];
+  }
+
+  // 캐릭터 포즈 불러오기. poses를 주면 그 포즈만(예: ['idle']), 없으면 폴더에 있는 아는 포즈 전부.
+  async loadSprite(id, { poses = null, onProgress = null } = {}) {
     const dir = `assets/char/${id}`;
-    const listing = await listDir(dir);
-    if (listing) this.listingAvailable = true;
-    const names = this.onlyBase ? BASE_FALLBACKS : [...new Set([...POSE_NAMES, ...BASE_FALLBACKS])];
-    const want = listing ? names.filter((n) => listing.includes(`${n}.png`)) : names;
-    const out = {};
+    const listing = await this.listDir(dir);
+    const set = this.sprites[id] || (this.sprites[id] = {});
+    let names = listing
+      .filter((f) => /\.png$/i.test(f) && !/_src\./i.test(f))
+      .map((f) => f.replace(/\.png$/i, ''))
+      .filter((n) => KNOWN_POSES.has(n));
+    if (names.includes('idle')) names = names.filter((n) => n !== 'ref_sheet');
+    if (this.onlyBase) names = names.filter((n) => BASE_FALLBACKS.includes(n));
+    if (poses) names = names.filter((n) => poses.includes(n));
+    const want = names.filter((n) => !set[n]);
+    let done = 0;
     await Promise.all(
       want.map(async (pose) => {
-        const img = await loadImage(`${dir}/${pose}.png`);
-        if (img) out[pose] = toProcessedCanvas(img, SPRITE_TARGET_H);
-        onProgress && onProgress();
+        const key = `${id}/${pose}`;
+        if (!this.pending[key]) {
+          this.pending[key] = loadImage(`${dir}/${pose}.png`).then((img) => {
+            if (img) set[pose] = toProcessedCanvas(img, SPRITE_TARGET_H);
+            delete this.pending[key];
+          });
+        }
+        await this.pending[key];
+        done++;
+        onProgress && onProgress(done / Math.max(1, want.length));
       })
     );
-    this.sprites[id] = out;
-    return out;
+    if (!want.length && onProgress) onProgress(1);
+    return set;
+  }
+
+  // 다른 상대의 큰 포즈 이미지는 내려 둔다(대진표용 idle만 남김)
+  unloadSprite(id, keep = ['idle']) {
+    const set = this.sprites[id];
+    if (!set) return;
+    for (const k of Object.keys(set)) if (!keep.includes(k)) delete set[k];
+  }
+
+  hasBase(id) {
+    const set = this.sprites[id];
+    return !!(set && BASE_FALLBACKS.some((b) => set[b]));
   }
 
   async loadBg(id) {
-    const dir = 'assets/bg';
-    const listing = await listDir(dir);
+    if (id in this.bgs) return this.bgs[id];
+    const listing = await this.listDir('assets/bg');
     let img = null;
     for (const ext of ['jpg', 'png', 'webp']) {
-      if (listing && !listing.includes(`${id}.${ext}`)) continue;
-      img = await loadImage(`${dir}/${id}.${ext}`);
+      if (!listing.includes(`${id}.${ext}`)) continue;
+      img = await loadImage(`assets/bg/${id}.${ext}`);
       if (img) break;
     }
     this.bgs[id] = img;
     return img;
   }
 
-  // 포즈 조회: { img, fallback }. 없으면 idle → ref_sheet 순으로 대체(fallback=true).
+  // assets/ui, assets/fx 의 이미지. process=true면 단색 배경을 지우고 targetH로 줄인 캔버스.
+  async loadImageAsset(dir, name, { process = true, targetH = 512 } = {}) {
+    const key = `${dir}/${name}`;
+    if (key in this.images) return this.images[key];
+    const listing = await this.listDir(`assets/${dir}`);
+    let out = null;
+    for (const ext of ['png', 'jpg', 'webp']) {
+      if (!listing.includes(`${name}.${ext}`)) continue;
+      const img = await loadImage(`assets/${dir}/${name}.${ext}`);
+      if (img) {
+        out = process ? toProcessedCanvas(img, targetH) : img;
+        break;
+      }
+    }
+    this.images[key] = out;
+    return out;
+  }
+
+  image(dir, name) {
+    return this.images[`${dir}/${name}`] || null;
+  }
+
+  // 포즈 조회: { img, fallback, name }.
+  // pose는 문자열 또는 우선순위 배열. 첫 후보가 아니면 fallback=true(렌더러가 코드 변형을 크게 준다).
   pose(spriteId, pose, alt) {
     const set = this.sprites[spriteId] || {};
-    if (set[pose]) return { img: set[pose], fallback: false, name: pose };
-    if (alt && set[alt]) return { img: set[alt], fallback: true, name: alt };
+    const chain = Array.isArray(pose) ? [...pose] : [pose];
+    if (alt) chain.push(...(Array.isArray(alt) ? alt : [alt]));
+    for (let i = 0; i < chain.length; i++) {
+      const n = chain[i];
+      if (n && set[n]) return { img: set[n], fallback: i > 0, name: n };
+    }
     for (const b of BASE_FALLBACKS) if (set[b]) return { img: set[b], fallback: true, name: b };
     return { img: null, fallback: true, name: null };
   }

@@ -1,0 +1,99 @@
+{
+ "assets/bg": [
+  "champ_dome.jpg",
+  "dong_gym.jpg",
+  "national_hall.jpg",
+  "world_arena.jpg"
+ ],
+ "assets/ui": [
+  "skill_basic.png",
+  "skill_charge.png",
+  "skill_double.png",
+  "skill_iron.png",
+  "skill_ranged.png",
+  "title_key.jpg"
+ ],
+ "assets/fx": [
+  "forehead_wave.png",
+  "helmet_shard.png",
+  "proj_bowling.png",
+  "proj_trophy.png"
+ ],
+ "assets/char/ajeossi": [
+  "backstep.png",
+  "duck.png",
+  "headbutt_hit.png",
+  "headbutt_ready.png",
+  "hurt.png",
+  "idle.png",
+  "lose.png",
+  "ranged.png",
+  "walk.png",
+  "win.png"
+ ],
+ "assets/char/frente": [
+  "attack_grab.png",
+  "attack_high.png",
+  "attack_low.png",
+  "idle.png",
+  "lose.png",
+  "stun.png",
+  "telegraph_grab.png",
+  "telegraph_high.png",
+  "telegraph_low.png"
+ ],
+ "assets/char/gohoejeon": [
+  "attack_high.png",
+  "attack_low.png",
+  "idle.png",
+  "lose.png",
+  "stun.png",
+  "telegraph_high.png",
+  "telegraph_low.png"
+ ],
+ "assets/char/gregor": [
+  "attack_high.png",
+  "guard.png",
+  "idle.png",
+  "lose.png",
+  "stun.png",
+  "telegraph_high.png"
+ ],
+ "assets/char/gwak": [
+  "attack.png",
+  "idle.png",
+  "lose.png",
+  "stun.png",
+  "telegraph_high.png",
+  "telegraph_low.png"
+ ],
+ "assets/char/helmet": [
+  "attack_high.png",
+  "attack_low.png",
+  "idle.png",
+  "lose.png",
+  "retreat.png",
+  "stun.png",
+  "telegraph_high.png",
+  "telegraph_low.png"
+ ],
+ "assets/char/mabongchun": [
+  "attack_grab.png",
+  "attack_high.png",
+  "guard.png",
+  "idle.png",
+  "lose.png",
+  "stun.png",
+  "telegraph_grab.png",
+  "telegraph_high.png"
+ ],
+ "assets/char/osunja": [
+  "attack_high.png",
+  "attack_low.png",
+  "idle.png",
+  "lose.png",
+  "stun.png",
+  "telegraph_high.png",
+  "telegraph_low.png"
+ ]
+}

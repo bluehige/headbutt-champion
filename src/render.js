@@ -14,7 +14,8 @@ const easeOut = (k) => 1 - (1 - k) * (1 - k);
 const pick = (arr) => (arr && arr.length ? arr[Math.floor(Math.random() * arr.length)] : '');
 
 // ───────── 배경 ─────────
-export function drawBackground(ctx, img, dim = 0) {
+// img가 없으면 bgId(대회별)에 맞춰 코드로 그린다.
+export function drawBackground(ctx, img, dim = 0, bgId = 'dong_gym') {
   if (img) {
     // 1920×1080 → 1280×720 꽉 채우기
     const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
@@ -22,19 +23,158 @@ export function drawBackground(ctx, img, dim = 0) {
     const h = img.naturalHeight * s;
     ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
   } else {
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#5b5a55');
-    g.addColorStop(0.52, '#8a877c');
-    g.addColorStop(0.53, '#2f5fb0');
-    g.addColorStop(0.95, '#2a56a0');
-    g.addColorStop(0.951, '#c2372c');
-    g.addColorStop(1, '#a52c22');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
+    drawFallbackBg(ctx, bgId);
   }
   if (dim > 0) {
     ctx.fillStyle = `rgba(10,14,30,${dim})`;
     ctx.fillRect(0, 0, W, H);
+  }
+}
+
+// 배경 이미지가 아직 없을 때의 대회별 코드 배경(정적인 그림이라 캐시해 둔다)
+const bgCache = {};
+function drawFallbackBg(ctx, id) {
+  if (typeof document === 'undefined') return;
+  let c = bgCache[id];
+  if (!c) {
+    c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    paintFallbackBg(c.getContext('2d'), id);
+    bgCache[id] = c;
+  }
+  ctx.drawImage(c, 0, 0, W, H);
+}
+
+function paintFallbackBg(g, id) {
+  const horizon = 400;
+  const fill = (stops, y0, y1) => {
+    const gr = g.createLinearGradient(0, y0, 0, y1);
+    stops.forEach(([k, col]) => gr.addColorStop(k, col));
+    g.fillStyle = gr;
+    g.fillRect(0, y0, W, y1 - y0);
+  };
+  if (id === 'national_hall') {
+    // 전국대회: 나무 벽 체육관, 위에 현수막, 조명 두 줄
+    fill([[0, '#3b2a1e'], [1, '#6b4a30']], 0, horizon);
+    g.fillStyle = 'rgba(0,0,0,0.18)';
+    for (let x = 0; x < W; x += 64) g.fillRect(x, 0, 4, horizon);
+    g.fillStyle = '#1d3d7a';
+    g.fillRect(140, 70, W - 280, 70);
+    g.fillStyle = '#f2b632';
+    g.fillRect(140, 134, W - 280, 6);
+    g.font = '40px "Black Han Sans", sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = '#f7f3e8';
+    g.fillText('전국 이마 선수권 대회', W / 2, 106);
+    for (let i = 0; i < 6; i++) {
+      const x = 120 + i * 208;
+      const rg = g.createRadialGradient(x, 20, 2, x, 20, 80);
+      rg.addColorStop(0, 'rgba(255,240,200,0.9)');
+      rg.addColorStop(1, 'rgba(255,240,200,0)');
+      g.fillStyle = rg;
+      g.fillRect(x - 80, 0, 160, 100);
+    }
+    fill([[0, '#c98d4f'], [1, '#8a5a2e']], horizon, H);
+    g.strokeStyle = 'rgba(60,30,10,0.35)';
+    g.lineWidth = 2;
+    for (let y = horizon + 18; y < H; y += 26) {
+      g.beginPath();
+      g.moveTo(0, y);
+      g.lineTo(W, y);
+      g.stroke();
+    }
+    g.strokeStyle = 'rgba(214,43,31,0.8)';
+    g.lineWidth = 6;
+    g.strokeRect(60, horizon + 40, W - 120, H - horizon - 20);
+  } else if (id === 'world_arena') {
+    // 세계대회: 어두운 경기장, 관중석 점, 만국기, 조명 빛줄기
+    fill([[0, '#0f1230'], [1, '#2b2060']], 0, horizon);
+    for (let i = 0; i < 900; i++) {
+      const x = (i * 97) % W;
+      const y = 150 + ((i * 53) % (horizon - 160));
+      g.fillStyle = ['#d62b1f', '#f2b632', '#2f6fe0', '#f7f3e8', '#2a9d8f'][i % 5];
+      g.globalAlpha = 0.25 + ((i * 31) % 50) / 100;
+      g.fillRect(x, y, 4, 4);
+    }
+    g.globalAlpha = 1;
+    const flags = ['#d62b1f', '#2f6fe0', '#f2b632', '#2a9d8f', '#f7f3e8', '#8a4fd6'];
+    g.strokeStyle = 'rgba(255,255,255,0.6)';
+    g.lineWidth = 2;
+    g.beginPath();
+    g.moveTo(0, 60);
+    g.quadraticCurveTo(W / 2, 120, W, 60);
+    g.stroke();
+    for (let i = 0; i < 24; i++) {
+      const x = 26 + i * 53;
+      const t = x / W;
+      const y = 60 + 4 * 60 * t * (1 - t);
+      g.fillStyle = flags[i % flags.length];
+      g.beginPath();
+      g.moveTo(x - 14, y);
+      g.lineTo(x + 14, y);
+      g.lineTo(x, y + 30);
+      g.closePath();
+      g.fill();
+    }
+    for (const [x, a] of [[200, 0.35], [W - 200, -0.35]]) {
+      g.save();
+      g.translate(x, 0);
+      g.rotate(a);
+      const lg = g.createLinearGradient(0, 0, 0, H);
+      lg.addColorStop(0, 'rgba(255,255,230,0.35)');
+      lg.addColorStop(1, 'rgba(255,255,230,0)');
+      g.fillStyle = lg;
+      g.beginPath();
+      g.moveTo(-20, 0);
+      g.lineTo(20, 0);
+      g.lineTo(160, H);
+      g.lineTo(-160, H);
+      g.closePath();
+      g.fill();
+      g.restore();
+    }
+    fill([[0, '#3d3f7a'], [1, '#1c1d40']], horizon, H);
+    g.fillStyle = 'rgba(242,182,50,0.85)';
+    g.fillRect(0, horizon, W, 6);
+  } else if (id === 'champ_dome') {
+    // 챔피언십: 검정·금색 돔, 방사형 빛, 링 로프
+    fill([[0, '#050505'], [1, '#2a2110']], 0, horizon);
+    g.save();
+    g.translate(W / 2, horizon - 40);
+    for (let i = 0; i < 24; i++) {
+      g.rotate((Math.PI * 2) / 24);
+      g.fillStyle = i % 2 ? 'rgba(242,182,50,0.10)' : 'rgba(242,182,50,0.04)';
+      g.beginPath();
+      g.moveTo(0, 0);
+      g.lineTo(-60, -900);
+      g.lineTo(60, -900);
+      g.closePath();
+      g.fill();
+    }
+    g.restore();
+    g.strokeStyle = 'rgba(242,182,50,0.55)';
+    g.lineWidth = 3;
+    for (let r = 300; r < 1100; r += 120) {
+      g.beginPath();
+      g.arc(W / 2, horizon + 200, r, Math.PI, Math.PI * 2);
+      g.stroke();
+    }
+    fill([[0, '#3a2c10'], [1, '#120d04']], horizon, H);
+    for (const [y, col] of [[horizon + 30, '#d62b1f'], [horizon + 70, '#f7f3e8'], [horizon + 110, '#2f6fe0']]) {
+      g.fillStyle = col;
+      g.fillRect(0, y - 40, W, 6);
+    }
+    g.fillStyle = '#c9a227';
+    g.fillRect(70, horizon - 60, 16, 200);
+    g.fillRect(W - 86, horizon - 60, 16, 200);
+  } else {
+    // 동대회(기본): 회색 벽 + 파랑 매트 + 빨강 띠
+    fill([[0, '#5b5a55'], [1, '#8a877c']], 0, 382);
+    fill([[0, '#2f5fb0'], [1, '#2a56a0']], 382, 684);
+    g.fillStyle = '#c2372c';
+    g.fillRect(0, 684, W, H - 684);
   }
 }
 
@@ -214,27 +354,58 @@ function playerLook(p, m, T) {
   return r;
 }
 
+// 공격 포즈 후보: 데이터의 attackPose → attack_<예고> → attack(곽두팔) → 예고 포즈
+function attackChain(type) {
+  if (!type) return ['attack', 'idle'];
+  const tg = type.telegraph;
+  return [type.attackPose, `attack_${tg}`, 'attack', tg === 'grab' ? 'attack_low' : null, type.telegraphPose, `telegraph_${tg}`].filter(Boolean);
+}
+function telegraphChain(type) {
+  const tg = type.telegraph;
+  return [type.telegraphPose, `telegraph_${tg}`, tg === 'grab' ? 'telegraph_low' : null, 'idle'].filter(Boolean);
+}
+
 function oppLook(o, m, T) {
   const r = { pose: 'idle', alt: null, mo: { dx: 0, dy: 0, rot: 0 }, sh: { rot: 0, sx: 1, sy: 1 }, keep: 0.15 };
   const { mo, sh } = r;
   switch (o.state) {
     case 'idle':
-      if (o.moving) {
+      if (o.retreating) {
+        // 헬멧: 뒤로 달아남(전용 포즈가 없으면 idle을 뒤로 젖혀 종종걸음)
+        r.pose = ['retreat', 'idle'];
+        mo.dy = -Math.abs(Math.sin(T * 14)) * 8;
+        sh.rot = -0.12;
+        r.keep = 0.2;
+      } else if (o.moving) {
         mo.dy = -Math.abs(Math.sin(T * 9)) * 6;
         mo.rot = Math.sin(T * 9) * 0.03;
       } else {
         const b = Math.sin(T * 2.6 + 1) * 0.012;
         sh.sy = 1 + b;
       }
-      if (o.guard) {
-        sh.sy *= 0.96;
-        sh.rot = 0.07;
+      if (o.guard && !o.retreating) {
+        r.pose = ['guard', 'idle'];
+        sh.sy *= 0.95;
+        sh.sx = 0.97;
+        sh.rot = 0.08;
+        r.keep = 0.1;
       }
       break;
+    case 'throw': {
+      // 던진 직후 잠깐 공격 포즈, 그 뒤엔 던진 쪽을 보며 기다림
+      const k = clamp(o.strikeT / 0.3, 0, 1);
+      if (k < 1) {
+        r.pose = attackChain(o.attack);
+        sh.rot = 0.3 * (1 - k);
+        sh.sx = 1 + 0.1 * (1 - k);
+        mo.dx = 18 * (1 - k);
+      }
+      break;
+    }
     case 'telegraph': {
       const tg = o.attack.telegraph;
       const k = clamp(o.t / o.dur, 0, 1);
-      r.pose = o.attack.telegraphPose || 'idle';
+      r.pose = telegraphChain(o.attack);
       const tremble = k > 0.65 ? Math.sin(T * 60) * 2.5 : 0;
       if (tg === 'high') {
         sh.rot = -0.24 * easeOut(k);
@@ -246,20 +417,24 @@ function oppLook(o, m, T) {
         sh.sx = 1 + 0.08 * k;
         mo.dx = -20 * k + tremble;
       } else {
-        // 잡기: 전용 포즈가 없으므로 가장 가까운 포즈(하단 예고)를 옆으로 벌려 표현
+        // 잡기: 전용 포즈가 없으면 가장 가까운 포즈(하단 예고)를 옆으로 벌려 표현
         sh.sx = 1 + 0.2 * k;
         sh.sy = 1 - 0.06 * k;
         sh.rot = 0.1 * k;
         mo.dx = tremble;
-        r.keep = 0.6;
+      }
+      // 속임: 바뀐 직후 몸이 휙 비틀린다
+      if (o.feinted && o.t < 0.18) {
+        const f = 1 - o.t / 0.18;
+        mo.rot += Math.sin(T * 70) * 0.06 * f;
+        mo.dx += 10 * f;
       }
       break;
     }
     case 'recover':
     case 'grabHold':
       if (o.strikeT < 0.28 || o.state === 'grabHold') {
-        r.pose = 'attack';
-        r.alt = o.attack ? o.attack.telegraphPose : null;
+        r.pose = attackChain(o.attack);
         const k = o.state === 'grabHold' ? 0.5 : 1 - o.strikeT / 0.28;
         sh.rot = 0.36 * k;
         sh.sx = 1 + 0.14 * k;
@@ -269,8 +444,7 @@ function oppLook(o, m, T) {
     case 'stun':
       if (o.strikeT < 0.2) {
         // 헛친 직후 잠깐은 공격 포즈
-        r.pose = 'attack';
-        r.alt = o.attack ? o.attack.telegraphPose : null;
+        r.pose = attackChain(o.attack);
         sh.rot = 0.4;
         sh.sx = 1.12;
         mo.dx = 26;
@@ -299,6 +473,7 @@ function oppLook(o, m, T) {
       break;
     }
     case 'win':
+      r.pose = ['win', 'idle'];
       mo.dy = -Math.abs(Math.sin(T * 4)) * 14;
       sh.sx = 1.03 + Math.sin(T * 8) * 0.02;
       break;
@@ -356,6 +531,27 @@ export class Effects {
     this.shakeAmp = Math.max(this.shakeAmp, a);
   }
 
+  sparks(x, y, n = 8) {
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4;
+      const v = 260 + Math.random() * 260;
+      this.particles.push({ kind: 'spark', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: 0, life: 0.35 + Math.random() * 0.2 });
+    }
+  }
+
+  // 헬멧 조각(이미지가 있으면 helmet_shard.png, 없으면 코드로 그린 금속 조각)
+  shards(x, y) {
+    for (let i = 0; i < 12; i++) {
+      const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.8;
+      const v = 320 + Math.random() * 420;
+      this.particles.push({
+        kind: 'shard', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 18,
+        size: 26 + Math.random() * 30, t: 0, life: 1.1 + Math.random() * 0.4, seed: i,
+      });
+    }
+    this.sparks(x, y, 14);
+  }
+
   handle(events, m) {
     const p = m.player;
     const o = m.opp;
@@ -366,6 +562,32 @@ export class Effects {
           this.pop('박아!', W / 2, H / 2 - 40, { size: 150, color: COLORS.red, stroke: COLORS.paper, life: 0.9, vy: 0, rot: -0.06 });
           break;
         case 'telegraph':
+          if (e.chained) {
+            this.pop('하나 더!', o.x, headY - 150, { size: 44, color: COLORS.paper, stroke: COLORS.red, life: 0.7 });
+          }
+          break;
+        case 'feint':
+          this.feint = { from: e.from, to: e.tg, t: 0 };
+          this.pop('속임!', o.x - 10, headY - 160, { size: 54, color: COLORS.gold, stroke: COLORS.ink, life: 0.8 });
+          this.shake(4);
+          this.say('feint', 3, 1.8);
+          break;
+        case 'throw':
+          if (!this.saidThrow || Math.random() < 0.25) this.say(e.tg === 'high' ? 'throwHigh' : 'throwLow', 1, 1.8);
+          this.saidThrow = true;
+          break;
+        case 'helmetHit':
+          this.impact(e.x, headY - 10, false);
+          this.sparks(e.x, headY - 20, 10);
+          this.pop(`헬멧 -${e.damage}`, e.x + 40, headY - 110, { size: 36, color: '#c9ced8', stroke: COLORS.ink, life: 0.8, punch: false, rot: 0 });
+          if (e.left > 0) this.say('helmetHit', 3, 1.8);
+          break;
+        case 'helmetBreak':
+          this.shards(e.x - 20, headY - 20);
+          this.shake(20);
+          this.screenFlash = 0.22;
+          this.pop('헬멧 파괴!', W / 2, H / 2 - 120, { size: 110, color: COLORS.gold, stroke: COLORS.red, life: 1.3, vy: -10, rot: -0.05 });
+          this.say('helmetBreak', 8, 3);
           break;
         case 'hit':
           if (e.who === 'opp') {
@@ -375,8 +597,15 @@ export class Effects {
             this.flash.opp = { color: '#ffffff', t: 0, life: big ? 0.22 : 0.14 };
             this.pop(big ? '쾅!!' : '쾅!', e.x, headY - 40, { size: big ? 140 : 86, color: big ? COLORS.red : COLORS.gold, stroke: big ? COLORS.paper : COLORS.ink });
             this.pop(`-${e.damage}`, o.x + 40, headY + 60, { size: big ? 52 : 38, color: COLORS.paper, font: FONT_BODY, punch: false, life: 0.8, rot: 0 });
-            if (e.counter) {
-              this.say('counter', 5, 2.6);
+            const halved = m.def.helmet && o.helmetHp > 0 && e.kind !== 'ranged';
+            if (halved) this.pop('헬멧이 받아냄 ½', o.x + 20, headY - 150, { size: 32, color: '#c9ced8', stroke: COLORS.ink, life: 0.8, punch: false, rot: 0 });
+            if (e.counter && e.pierced) {
+              this.pop('가드 관통!', o.x, headY - 110, { size: 44, color: COLORS.gold, stroke: COLORS.red });
+              this.say('pierce', 6, 2.6);
+              this.screenFlash = 0.18;
+            } else if (e.counter) {
+              if (halved && Math.random() < 0.5) this.say('halfDamage', 5, 2.4);
+              else this.say('counter', 5, 2.6);
               this.screenFlash = 0.18;
             } else if (e.pierced) this.pop('가드 관통!', o.x, headY - 110, { size: 40, color: COLORS.paper });
           } else {
@@ -400,8 +629,21 @@ export class Effects {
           break;
         case 'evade':
           this.pop(e.tg === 'high' ? '숙였다!' : e.tg === 'low' ? '빠졌다!' : '끊었다!', p.x - 10, headY - 70, { size: 46, color: COLORS.paper, stroke: COLORS.navy, life: 0.8 });
-          if (e.tg === 'high') this.say('evadeHigh', 2);
+          if (e.chain) {
+            this.pop('아직이다!', p.x + 40, headY - 130, { size: 40, color: COLORS.gold, stroke: COLORS.red, life: 0.8 });
+            this.say('combo', 3, 1.8);
+            this.comboEvaded = true;
+          } else if (e.noGap) {
+            this.pop('빈틈 없음', o.x, headY - 120, { size: 38, color: '#c9ced8', stroke: COLORS.ink, life: 0.8 });
+          } else if (this.comboEvaded && m.opp.state === 'stun') {
+            this.say('comboClear', 4, 2.2);
+            this.comboEvaded = false;
+          } else if (e.shallow) {
+            this.pop('빈틈이 얕다', o.x, headY - 120, { size: 36, color: COLORS.paper, stroke: COLORS.ink, life: 0.8 });
+            if (Math.random() < 0.4) this.say('shallow', 2, 1.8);
+          } else if (e.tg === 'high') this.say('evadeHigh', 2);
           else if (e.tg === 'low') this.say('evadeLow', 2);
+          if (!e.chain) this.comboEvaded = false;
           break;
         case 'ironBlock':
           this.impact(e.x + 40, headY + 30, true);
@@ -410,13 +652,19 @@ export class Effects {
           this.pop('깡!', e.x + 30, headY - 40, { size: 100, color: COLORS.gold });
           this.say('ironBlock', 4);
           break;
-        case 'block':
-          this.pop(e.armor ? '안 먹힘!' : '막힘', e.x, headY - 20, { size: 44, color: '#c9ced8', stroke: COLORS.ink, life: 0.6 });
+        case 'block': {
+          const label = e.helmet ? '헬멧에 막힘' : e.iron ? '철벽!' : e.stunGuard ? '팔을 안 푼다!' : e.armor ? '안 먹힘!' : '막힘';
+          this.pop(label, e.x, headY - 20, { size: 44, color: '#c9ced8', stroke: COLORS.ink, life: 0.6 });
           this.shake(3);
-          if (Math.random() < 0.5) this.say('guard', 1, 1.8);
+          if (e.iron) this.say('ironGuard', 3, 2.2);
+          else if (e.stunGuard) this.say('stunGuard', 3, 2.2);
+          else if (Math.random() < 0.5) this.say('guard', 1, 1.8);
           break;
+        }
         case 'guardBreak':
           this.pop('가드 파괴!', e.x, headY - 120, { size: 56, color: COLORS.red, stroke: COLORS.paper, life: 0.9 });
+          this.shake(14);
+          this.say('guardBreak', 6, 2.6);
           break;
         case 'whiff':
           this.pop('슉~', p.x + 150, headY + 10, { size: 34, color: '#d8d8d8', stroke: COLORS.ink, life: 0.45, punch: false });
@@ -467,8 +715,28 @@ export class Effects {
         if (f.t >= f.life) this.flash[k] = null;
       }
     }
-    for (const q of this.particles) q.t += dt;
+    for (const q of this.particles) {
+      q.t += dt;
+      if (q.kind === 'spark' || q.kind === 'shard') {
+        q.x += q.vx * dt;
+        q.y += q.vy * dt;
+        q.vy += 1400 * dt;
+        if (q.kind === 'shard') {
+          q.rot += q.vr * dt;
+          if (q.y > FLOOR_Y - 6) {
+            q.y = FLOOR_Y - 6;
+            q.vy *= -0.3;
+            q.vx *= 0.6;
+            q.vr *= 0.5;
+          }
+        }
+      }
+    }
     this.particles = this.particles.filter((q) => q.t < q.life);
+    if (this.feint) {
+      this.feint.t += dt;
+      if (this.feint.t > 0.6) this.feint = null;
+    }
     for (const q of this.texts) {
       q.t += dt;
       q.y += q.vy * dt;
@@ -510,6 +778,36 @@ export class Effects {
         ctx.beginPath();
         ctx.arc(q.x, q.y, q.r * easeOut(k), 0, Math.PI * 2);
         ctx.stroke();
+      } else if (q.kind === 'spark') {
+        ctx.strokeStyle = `rgba(255,236,170,${1 - k})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(q.x, q.y);
+        ctx.lineTo(q.x - q.vx * 0.03, q.y - q.vy * 0.03);
+        ctx.stroke();
+      } else if (q.kind === 'shard') {
+        ctx.globalAlpha = k > 0.75 ? (1 - k) / 0.25 : 1;
+        ctx.translate(q.x, q.y);
+        ctx.rotate(q.rot);
+        const s = q.size;
+        if (this.shardImg) {
+          const iw = this.shardImg.width;
+          const ih = this.shardImg.height;
+          const sc = s / Math.max(iw, ih);
+          ctx.drawImage(this.shardImg, (-iw * sc) / 2, (-ih * sc) / 2, iw * sc, ih * sc);
+        } else {
+          ctx.fillStyle = q.seed % 3 === 0 ? '#e8e8e8' : q.seed % 3 === 1 ? '#b9bec7' : '#c9a227';
+          ctx.strokeStyle = COLORS.ink;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-s * 0.5, -s * 0.2);
+          ctx.lineTo(s * 0.1, -s * 0.45);
+          ctx.lineTo(s * 0.5, s * 0.1);
+          ctx.lineTo(-s * 0.1, s * 0.4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
       }
       ctx.restore();
     }
@@ -540,19 +838,27 @@ export class Effects {
 
 // ───────── 경기 장면 ─────────
 export class MatchView {
-  constructor(assets, match, playerDef, captions) {
+  // visual: { sprite, tint, scale:[sx,sy] } 상대 그림(이미지가 하나도 없으면 곽두팔 그림에 색을 입힌 대체)
+  constructor(assets, match, playerDef, captions, visual) {
     this.assets = assets;
     this.m = match;
     this.playerDef = playerDef;
+    this.visual = visual || { sprite: match.oppDef.sprite, tint: match.oppDef.tint || null, scale: null };
     this.fx = new Effects(captions);
+    this.fx.shardImg = assets.image('fx', 'helmet_shard');
     this.px = match.player.x;
     this.ox = match.opp.x;
     this.T = 0;
+    this.retreatSaid = -99;
   }
 
   update(dt) {
     this.T += dt;
     const m = this.m;
+    if (m.opp.retreating && this.T - this.retreatSaid > 8) {
+      this.retreatSaid = this.T;
+      this.fx.say('retreat', 1, 1.8);
+    }
     this.fx.handle(m.drainEvents(), m);
     this.fx.update(dt);
     const k = 1 - Math.exp(-dt * 28);
@@ -585,24 +891,28 @@ export class MatchView {
 
     ctx.save();
     ctx.translate(sx, sy);
-    drawBackground(ctx, a.bgs[m.oppDef.bg] || a.bgs.dong_gym, 0);
+    drawBackground(ctx, a.bgs[m.oppDef.bg], 0, m.oppDef.bg);
 
-    shadow(ctx, this.ox, 1.05);
+    const vis = this.visual;
+    const [vsx, vsy] = vis.scale || [1, 1];
+    shadow(ctx, this.ox, 1.05 * vsx);
     shadow(ctx, this.px, 1);
 
     // 상대
     const o = m.opp;
     const ol = oppLook(o, m, T);
-    const ospec = this.look(m.oppDef.sprite, m.oppDef.spriteFacing, ol);
+    const ospec = this.look(vis.sprite, m.oppDef.spriteFacing, ol);
     ospec.x = this.ox;
     ospec.screenFacing = -1;
+    ospec.sx *= vsx;
+    ospec.sy *= vsy;
     if (o.state === 'telegraph') {
       const tg = m.telegraphs[o.attack.telegraph];
       ospec.outline = { color: tg.color, width: 5 + Math.sin(T * 20) * 1.5 };
     } else if (o.state === 'stun' && o.strikeT >= 0.2) {
       ospec.outline = { color: COLORS.gold, width: 3 };
     }
-    if (m.oppDef.tint) ospec.tint = { color: m.oppDef.tint, alpha: 0.22 };
+    if (vis.tint) ospec.tint = { color: vis.tint, alpha: vis.tintAlpha ?? 0.22 };
     ospec.flash = fx.flashOf('opp');
     drawSprite(ctx, a, ospec);
 
@@ -624,6 +934,7 @@ export class MatchView {
     drawSprite(ctx, a, pspec);
 
     this.drawProjectiles(ctx);
+    this.drawOppProjectiles(ctx);
     this.drawOverheads(ctx);
     fx.drawParticles(ctx);
     fx.drawTexts(ctx);
@@ -637,7 +948,18 @@ export class MatchView {
 
   drawProjectiles(ctx) {
     const y = FLOOR_Y - CHAR_H * 0.76;
+    const wave = this.assets.image('fx', 'forehead_wave');
     for (const pr of this.m.projectiles) {
+      if (wave) {
+        // 1024×512, 오른쪽으로 날아가는 그림. 앞(오른쪽) 끝을 pr.x에 맞춘다
+        const h = 150;
+        const w = (wave.width / wave.height) * h;
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, pr.age / 0.06);
+        ctx.drawImage(wave, pr.x - w * 0.85, y - h / 2, w, h);
+        ctx.restore();
+        continue;
+      }
       ctx.save();
       ctx.translate(pr.x, y);
       // 충격파 고리
@@ -666,6 +988,61 @@ export class MatchView {
     }
   }
 
+  // 더 헬멧이 던진 물건: 트로피(빨강 ▲, 머리 높이로 날아옴), 볼링공(파랑 ▶, 바닥을 굴러옴)
+  // 예고 규칙과 같게 물건 테두리를 그 색으로 칠하고 머리 위에 같은 아이콘을 붙인다.
+  drawOppProjectiles(ctx) {
+    const m = this.m;
+    const T = this.T;
+    for (const pr of m.oppProjectiles) {
+      const tg = m.telegraphs[pr.tg];
+      const high = pr.kind === 'trophy';
+      const travel = Math.max(1, pr.x0 - (m.player.x + 50));
+      const k = clamp((pr.x0 - pr.x) / travel, 0, 1);
+      const size = high ? 96 : 70;
+      const y = high ? FLOOR_Y - CHAR_H * 0.8 - Math.sin(k * Math.PI) * 50 : FLOOR_Y - size / 2 - 2;
+      const rot = high ? -T * 9 : -(pr.x0 - pr.x) / (size / 2);
+      const img = this.assets.image('fx', high ? 'proj_trophy' : 'proj_bowling');
+      ctx.save();
+      ctx.globalAlpha = pr.passed ? 0.55 : 1;
+      // 바닥 그림자
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(pr.x, FLOOR_Y + 2, size * 0.45, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // 속도선
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 3;
+      for (let i = 0; i < 3; i++) {
+        const yy = y - size * 0.25 + i * size * 0.25;
+        ctx.beginPath();
+        ctx.moveTo(pr.x + size * 0.6, yy);
+        ctx.lineTo(pr.x + size * 0.6 + 40 + i * 14, yy);
+        ctx.stroke();
+      }
+      ctx.translate(pr.x, y);
+      ctx.save();
+      ctx.rotate(rot);
+      if (img) {
+        const s = size / Math.max(img.width, img.height);
+        const w = img.width * s;
+        const h = img.height * s;
+        const sil = this.assets.silhouette(img, tg.color);
+        for (let a = 0; a < 8; a++) {
+          const ang = (a / 8) * Math.PI * 2;
+          ctx.drawImage(sil, -w / 2 + Math.cos(ang) * 4, -h / 2 + Math.sin(ang) * 4, w, h);
+        }
+        ctx.drawImage(img, -w / 2, -h / 2, w, h);
+      } else if (high) {
+        drawTrophyShape(ctx, size, tg.color);
+      } else {
+        drawBowlingShape(ctx, size, tg.color);
+      }
+      ctx.restore();
+      if (!pr.passed) drawTelegraphIcon(ctx, 0, -size / 2 - 34, 18, tg, 0);
+      ctx.restore();
+    }
+  }
+
   // 상대 머리 위 예고 아이콘, 빈틈 표시, 가드 표시
   drawOverheads(ctx) {
     const m = this.m;
@@ -677,7 +1054,42 @@ export class MatchView {
       const tg = m.telegraphs[o.attack.telegraph];
       const k = clamp(o.t / o.dur, 0, 1);
       const pop = o.t < 0.1 ? 1.5 - (o.t / 0.1) * 0.5 : 1;
-      drawTelegraphIcon(ctx, x, y, 38 * pop, tg, k);
+      // 속임이 들어 있는 예고는 아이콘이 미세하게 흔들린다(끝까지 보라는 신호)
+      const wob = o.attack.feint && !o.feinted ? Math.sin(T * 26) * 3 : 0;
+      drawTelegraphIcon(ctx, x + wob, y, 38 * pop, tg, k);
+      // 바뀌기 전 아이콘이 X 표시와 함께 옆으로 밀려나며 사라진다
+      const ff = this.fx.feint;
+      if (ff && o.feinted && ff.t < 0.5) {
+        const fk = ff.t / 0.5;
+        ctx.save();
+        ctx.globalAlpha = 1 - fk;
+        const fx0 = x + 70 + fk * 40;
+        drawTelegraphIcon(ctx, fx0, y - 10, 22, m.telegraphs[ff.from], 0);
+        ctx.strokeStyle = COLORS.paper;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(fx0 - 22, y - 32);
+        ctx.lineTo(fx0 + 22, y + 12);
+        ctx.moveTo(fx0 + 22, y - 32);
+        ctx.lineTo(fx0 - 22, y + 12);
+        ctx.stroke();
+        ctx.restore();
+      }
+      // 콤보 표시: 첫 타 예고에 "×2", 이어지는 둘째 타에 "2타"
+      if (o.attack.chain || o.chained) {
+        ctx.save();
+        ctx.font = `26px ${FONT_TITLE}`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 6;
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = COLORS.ink;
+        const label = o.chained ? '2타!' : '×2';
+        ctx.strokeText(label, x + 56, y - 26);
+        ctx.fillStyle = COLORS.gold;
+        ctx.fillText(label, x + 56, y - 26);
+        ctx.restore();
+      }
       // 정답 힌트
       ctx.save();
       ctx.font = `28px ${FONT_TITLE}`;
@@ -756,6 +1168,69 @@ export class MatchView {
       ctx.restore();
     }
   }
+}
+
+function drawTrophyShape(ctx, size, edge) {
+  const s = size / 100;
+  ctx.save();
+  ctx.scale(s, s);
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = edge;
+  const path = () => {
+    ctx.beginPath();
+    ctx.moveTo(-30, -44);
+    ctx.lineTo(30, -44);
+    ctx.quadraticCurveTo(30, 6, 8, 12);
+    ctx.lineTo(8, 26);
+    ctx.lineTo(24, 40);
+    ctx.lineTo(-24, 40);
+    ctx.lineTo(-8, 26);
+    ctx.lineTo(-8, 12);
+    ctx.quadraticCurveTo(-30, 6, -30, -44);
+    ctx.closePath();
+  };
+  path();
+  ctx.stroke();
+  const g = ctx.createLinearGradient(-30, -44, 30, 40);
+  g.addColorStop(0, '#fff1a8');
+  g.addColorStop(0.5, '#f2b632');
+  g.addColorStop(1, '#a87410');
+  ctx.fillStyle = g;
+  path();
+  ctx.fill();
+  // 손잡이
+  ctx.strokeStyle = '#c98f12';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(-34, -24, 12, Math.PI * 0.5, Math.PI * 1.5);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(34, -24, 12, -Math.PI * 0.5, Math.PI * 0.5);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBowlingShape(ctx, size, edge) {
+  const r = size / 2;
+  ctx.save();
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = edge;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.stroke();
+  const g = ctx.createRadialGradient(-r * 0.35, -r * 0.35, 2, 0, 0, r);
+  g.addColorStop(0, '#5b6c99');
+  g.addColorStop(1, '#141c33');
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.fillStyle = '#05070d';
+  for (const [x, y] of [[-r * 0.2, -r * 0.35], [r * 0.15, -r * 0.4], [0, -r * 0.08]]) {
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 function drawStar(ctx, x, y, r, color) {
