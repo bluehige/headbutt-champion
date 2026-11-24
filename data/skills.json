@@ -1,0 +1,116 @@
+{
+  "player": {
+    "id": "ajeossi",
+    "name": "김 과장",
+    "title": "영업2팀 · 회식 직후",
+    "sprite": "ajeossi",
+    "spriteFacing": "right"
+  },
+  "rules": {
+    "matchTime": 60,
+    "readyTime": 1.6,
+    "endDelay": 1.8,
+    "playerBaseHp": 100,
+    "hpPerLevel": 10,
+    "stageLeft": 110,
+    "stageRight": 1170,
+    "playerStartX": 380,
+    "opponentStartX": 900,
+    "minGap": 190,
+    "walkSpeed": 240,
+    "duckTime": 0.5,
+    "backstepTime": 0.4,
+    "evadeCooldown": 0.2,
+    "backstepDistance": 120,
+    "headbutt": { "windup": 0.12, "active": 0.08, "recovery": 0.26, "reach": 290, "lunge": 34 },
+    "gapTime": 0.8,
+    "counterMultiplier": 2.5,
+    "hitStop": 0.08,
+    "counterHitStop": 0.14,
+    "playerHurtTime": 0.35,
+    "playerGrabbedTime": 0.9,
+    "opponentStaggerTime": 0.45,
+    "blockPushback": 40,
+    "blockRecoil": 0.45,
+    "blockPunishDelay": 0.25,
+    "hitPush": 22,
+    "counterHitMultiplier": 1.5,
+    "gauge": { "max": 100, "start": 30, "evade": 20, "hit": 10, "hurt": -10 }
+  },
+  "skills": [
+    {
+      "id": "basic",
+      "level": 1,
+      "name": "기본 박치기",
+      "input": "headbutt",
+      "keyLabel": "Space",
+      "cost": 0,
+      "damage": 12,
+      "desc": "피해 12, 빈틈에 넣으면 2.5배"
+    },
+    {
+      "id": "double",
+      "level": 2,
+      "name": "이환이형 박치기",
+      "input": "slot1",
+      "keyLabel": "Q",
+      "cost": 30,
+      "duration": 0.72,
+      "hits": [
+        { "at": 0.12, "damage": 12, "pierceGuard": false },
+        { "at": 0.42, "damage": 18, "pierceGuard": true }
+      ],
+      "desc": "2연타(12+18), 둘째 타는 가드를 뚫는다"
+    },
+    {
+      "id": "iron",
+      "level": 3,
+      "name": "금강불괴 이마",
+      "input": "slot2",
+      "keyLabel": "W",
+      "cost": 40,
+      "duration": 2.0,
+      "desc": "2초 동안 정면 공격 무효, 받아낸 상대는 빈틈"
+    },
+    {
+      "id": "kyuljae",
+      "level": 4,
+      "name": "결재 박치기",
+      "input": "headbuttHold",
+      "keyLabel": "Space꾹",
+      "cost": 0,
+      "chargeTime": 1.0,
+      "damage": 28,
+      "guardBreak": true,
+      "desc": "1초 누르고 떼면 피해 28, 가드 파괴"
+    },
+    {
+      "id": "ranged",
+      "level": 5,
+      "name": "원거리 박치기",
+      "input": "slot3",
+      "keyLabel": "E",
+      "cost": 50,
+      "castTime": 0.42,
+      "fireAt": 0.2,
+      "damage": 25,
+      "speed": 950,
+      "desc": "이마 충격파 발사, 피해 25, 거리 무제한"
+    }
+  ],
+  "captions": {
+    "counter": ["이마가 들어갔습니다!"],
+    "grabBreak": ["잡기를 이마로 끊어냅니다!", "잡히기 전에 이마가 먼저 갑니다!"],
+    "evadeHigh": ["숙였습니다! 30년 결재 인사의 각도!", "고개 숙여 피합니다! 부장님 앞 그 자세!"],
+    "evadeLow": ["물러섭니다! 2차 권유를 피하던 그 발놀림!", "뒤로 빠집니다! 계산대 앞 그 스텝!"],
+    "ironBlock": ["금강불괴! 이마로 받아냅니다!"],
+    "guard": ["막혔습니다. 가드가 단단하네요.", "가드 위를 박았습니다. 아깝습니다."],
+    "grabbed": ["잡혔습니다! 헬스장 관장의 악력!"],
+    "hitHigh": ["훅이 들어갑니다! 넥타이가 휘날립니다!"],
+    "hitLow": ["돌진에 밀려납니다!"],
+    "koWin": ["KO! 이마 하나로 끝냈습니다!"],
+    "koLose": ["다운! 오늘 회식은 여기까지입니다."],
+    "timeUp": ["경기 종료! 판정으로 갑니다."],
+    "noGauge": ["소맥이 부족합니다!"]
+  }
+}

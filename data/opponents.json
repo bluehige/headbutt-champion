@@ -1,0 +1,87 @@
+{
+  "telegraphs": {
+    "high": { "label": "상단", "color": "#D62B1F", "shape": "triangle", "answer": "duck", "hint": "↓ 숙여!" },
+    "low": { "label": "돌진", "color": "#2F6FE0", "shape": "arrow", "answer": "backstep", "hint": "Shift 물러서!" },
+    "grab": { "label": "잡기", "color": "#F2B632", "shape": "circle", "answer": "headbutt", "hint": "Space 먼저 박아!" }
+  },
+  "attackTypes": {
+    "hook": {
+      "name": "큰 훅",
+      "telegraph": "high",
+      "telegraphPose": "telegraph_high",
+      "engageRange": 320,
+      "closeTo": 250,
+      "damageMul": 1.0,
+      "recover": 0.55,
+      "lunge": 40
+    },
+    "rush": {
+      "name": "돌진",
+      "telegraph": "low",
+      "telegraphPose": "telegraph_low",
+      "engageRange": 580,
+      "closeTo": 0,
+      "damageMul": 1.0,
+      "recover": 0.6,
+      "dash": true
+    },
+    "grab": {
+      "name": "잡기",
+      "telegraph": "grab",
+      "telegraphPose": "telegraph_low",
+      "telegraphTimeMul": 1.1,
+      "engageRange": 320,
+      "closeTo": 245,
+      "damageMul": 2.0,
+      "recover": 0.6,
+      "lunge": 60
+    }
+  },
+  "opponents": [
+    {
+      "id": "gwak",
+      "name": "곽두팔",
+      "title": "헬스장 관장",
+      "tournament": "동대회",
+      "matchLabel": "동대회 1경기",
+      "sprite": "gwak",
+      "spriteFacing": "left",
+      "bg": "dong_gym",
+      "hp": 100,
+      "telegraphTime": 0.9,
+      "attackInterval": 2.8,
+      "damage": 12,
+      "walkSpeed": 140,
+      "preferredRange": 270,
+      "guardChance": 0.7,
+      "pattern": { "hook": 1 },
+      "maxRepeat": 0,
+      "quote": "회식은 즐거웠나? 내 훅은 2차보다 독하다.",
+      "winQuote": "단백질이 부족하구먼. 내일 아침 6시, 헬스장으로 나와.",
+      "loseQuote": "…회원권 석 달 공짜로 줄 테니, 그 이마 좀 연구하게 해 주게."
+    }
+  ],
+  "debugOpponent": {
+    "id": "dummy",
+    "name": "곽두팔(대역)",
+    "title": "시험용 상대",
+    "tournament": "시험장",
+    "matchLabel": "디버그 · 예고 3종 시험",
+    "sprite": "gwak",
+    "spriteFacing": "left",
+    "tint": "#6FA8FF",
+    "bg": "dong_gym",
+    "hp": 160,
+    "telegraphTime": 0.9,
+    "attackInterval": 2.6,
+    "damage": 12,
+    "walkSpeed": 150,
+    "preferredRange": 270,
+    "guardChance": 0.5,
+    "pattern": { "hook": 1, "rush": 1, "grab": 1 },
+    "maxRepeat": 2,
+    "quote": "빨강, 파랑, 노랑 다 섞어서 간다. L 키로 레벨을 올려 봐.",
+    "winQuote": "시험 종료. 다시 해 보게.",
+    "loseQuote": "시험 통과. 예고 3종 확인 완료."
+  }
+}
