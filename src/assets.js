@@ -193,10 +193,15 @@ export class Assets {
     const dir = `assets/char/${id}`;
     const listing = await this.listDir(dir);
     const set = this.sprites[id] || (this.sprites[id] = {});
-    let names = listing
-      .filter((f) => /\.png$/i.test(f) && !/_src\./i.test(f))
-      .map((f) => f.replace(/\.png$/i, ''))
-      .filter((n) => KNOWN_POSES.has(n));
+    // 같은 포즈에 .webp(배포용, tools/optimize_images.py)가 있으면 그것을 쓰고 없으면 .png 원본을 쓴다.
+    const extOf = {};
+    for (const f of listing) {
+      const m = /^(.+)\.(png|webp)$/i.exec(f);
+      if (!m || /_src$/i.test(m[1])) continue;
+      const ext = m[2].toLowerCase();
+      if (!extOf[m[1]] || ext === 'webp') extOf[m[1]] = ext;
+    }
+    let names = Object.keys(extOf).filter((n) => KNOWN_POSES.has(n));
     if (names.includes('idle')) names = names.filter((n) => n !== 'ref_sheet');
     if (this.onlyBase) names = names.filter((n) => BASE_FALLBACKS.includes(n));
     if (poses) names = names.filter((n) => poses.includes(n));
@@ -206,7 +211,7 @@ export class Assets {
       want.map(async (pose) => {
         const key = `${id}/${pose}`;
         if (!this.pending[key]) {
-          this.pending[key] = loadImage(`${dir}/${pose}.png`).then((img) => {
+          this.pending[key] = loadImage(`${dir}/${pose}.${extOf[pose]}`).then((img) => {
             if (img) set[pose] = toProcessedCanvas(img, SPRITE_TARGET_H);
             delete this.pending[key];
           });
@@ -236,7 +241,7 @@ export class Assets {
     if (id in this.bgs) return this.bgs[id];
     const listing = await this.listDir('assets/bg');
     let img = null;
-    for (const ext of ['jpg', 'png', 'webp']) {
+    for (const ext of ['webp', 'jpg', 'png']) {
       if (!listing.includes(`${id}.${ext}`)) continue;
       img = await loadImage(`assets/bg/${id}.${ext}`);
       if (img) break;
@@ -251,7 +256,7 @@ export class Assets {
     if (key in this.images) return this.images[key];
     const listing = await this.listDir(`assets/${dir}`);
     let out = null;
-    for (const ext of ['png', 'jpg', 'webp']) {
+    for (const ext of ['webp', 'png', 'jpg']) {
       if (!listing.includes(`${name}.${ext}`)) continue;
       const img = await loadImage(`assets/${dir}/${name}.${ext}`);
       if (img) {

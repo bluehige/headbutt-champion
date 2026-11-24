@@ -1,99 +1,174 @@
 {
  "assets/bg": [
   "champ_dome.jpg",
+  "champ_dome.webp",
   "dong_gym.jpg",
+  "dong_gym.webp",
   "national_hall.jpg",
-  "world_arena.jpg"
+  "national_hall.webp",
+  "world_arena.jpg",
+  "world_arena.webp"
  ],
  "assets/ui": [
   "skill_basic.png",
+  "skill_basic.webp",
   "skill_charge.png",
+  "skill_charge.webp",
   "skill_double.png",
+  "skill_double.webp",
   "skill_iron.png",
+  "skill_iron.webp",
   "skill_ranged.png",
-  "title_key.jpg"
+  "skill_ranged.webp",
+  "title_key.jpg",
+  "title_key.webp"
  ],
  "assets/fx": [
   "forehead_wave.png",
+  "forehead_wave.webp",
   "helmet_shard.png",
+  "helmet_shard.webp",
   "proj_bowling.png",
-  "proj_trophy.png"
+  "proj_bowling.webp",
+  "proj_trophy.png",
+  "proj_trophy.webp"
  ],
  "assets/char/ajeossi": [
   "backstep.png",
+  "backstep.webp",
   "duck.png",
+  "duck.webp",
   "headbutt_hit.png",
+  "headbutt_hit.webp",
   "headbutt_ready.png",
+  "headbutt_ready.webp",
   "hurt.png",
+  "hurt.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "ranged.png",
+  "ranged.webp",
   "walk.png",
-  "win.png"
+  "walk.webp",
+  "win.png",
+  "win.webp"
  ],
  "assets/char/frente": [
   "attack_grab.png",
+  "attack_grab.webp",
   "attack_high.png",
+  "attack_high.webp",
   "attack_low.png",
+  "attack_low.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "stun.png",
+  "stun.webp",
   "telegraph_grab.png",
+  "telegraph_grab.webp",
   "telegraph_high.png",
-  "telegraph_low.png"
+  "telegraph_high.webp",
+  "telegraph_low.png",
+  "telegraph_low.webp"
  ],
  "assets/char/gohoejeon": [
   "attack_high.png",
+  "attack_high.webp",
   "attack_low.png",
+  "attack_low.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "stun.png",
+  "stun.webp",
   "telegraph_high.png",
-  "telegraph_low.png"
+  "telegraph_high.webp",
+  "telegraph_low.png",
+  "telegraph_low.webp"
  ],
  "assets/char/gregor": [
   "attack_high.png",
+  "attack_high.webp",
   "guard.png",
+  "guard.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "stun.png",
-  "telegraph_high.png"
+  "stun.webp",
+  "telegraph_high.png",
+  "telegraph_high.webp"
  ],
  "assets/char/gwak": [
   "attack.png",
+  "attack.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "stun.png",
+  "stun.webp",
   "telegraph_high.png",
-  "telegraph_low.png"
+  "telegraph_high.webp",
+  "telegraph_low.png",
+  "telegraph_low.webp"
  ],
  "assets/char/helmet": [
   "attack_high.png",
+  "attack_high.webp",
   "attack_low.png",
+  "attack_low.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "retreat.png",
+  "retreat.webp",
   "stun.png",
+  "stun.webp",
   "telegraph_high.png",
-  "telegraph_low.png"
+  "telegraph_high.webp",
+  "telegraph_low.png",
+  "telegraph_low.webp"
  ],
  "assets/char/mabongchun": [
   "attack_grab.png",
+  "attack_grab.webp",
   "attack_high.png",
+  "attack_high.webp",
   "guard.png",
+  "guard.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "stun.png",
+  "stun.webp",
   "telegraph_grab.png",
-  "telegraph_high.png"
+  "telegraph_grab.webp",
+  "telegraph_high.png",
+  "telegraph_high.webp"
  ],
  "assets/char/osunja": [
   "attack_high.png",
+  "attack_high.webp",
   "attack_low.png",
+  "attack_low.webp",
   "idle.png",
+  "idle.webp",
   "lose.png",
+  "lose.webp",
   "stun.png",
+  "stun.webp",
   "telegraph_high.png",
-  "telegraph_low.png"
+  "telegraph_high.webp",
+  "telegraph_low.png",
+  "telegraph_low.webp"
  ]
 }
