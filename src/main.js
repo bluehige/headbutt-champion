@@ -16,8 +16,21 @@ const ctx = canvas.getContext('2d');
 const input = new Input();
 
 let backing = 1;
+let fitW = 0;
+let fitH = 0;
+// 실제로 보이는 영역 크기. 휴대폰은 주소창·하단 바 때문에 innerHeight와 다를 수 있어 visualViewport를 우선한다.
+function viewSize() {
+  const vv = window.visualViewport;
+  if (vv && vv.width > 0 && vv.height > 0) return { w: vv.width, h: vv.height, x: vv.offsetLeft, y: vv.offsetTop };
+  return { w: window.innerWidth, h: window.innerHeight, x: 0, y: 0 };
+}
 function fit() {
-  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  const v = viewSize();
+  fitW = v.w;
+  fitH = v.h;
+  const s = Math.min(v.w / W, v.h / H);
+  stage.style.left = `${v.x + v.w / 2}px`;
+  stage.style.top = `${v.y + v.h / 2}px`;
   stage.style.transform = `translate(-50%, -50%) scale(${s})`;
   const k = Math.min(2, Math.max(1, s * (window.devicePixelRatio || 1)));
   if (Math.abs(k - backing) > 0.01 || canvas.width !== Math.round(W * k)) {
@@ -27,6 +40,17 @@ function fit() {
   }
 }
 window.addEventListener('resize', fit);
+window.addEventListener('orientationchange', fit);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', fit);
+  window.visualViewport.addEventListener('scroll', fit);
+}
+// 일부 휴대폰 브라우저는 화면을 돌리거나 주소창이 접힐 때 resize를 너무 일찍(옛 크기로) 보내거나 아예 안 보낸다.
+// 그래서 크기가 바뀌었는지 주기적으로 다시 확인한다.
+setInterval(() => {
+  const v = viewSize();
+  if (Math.abs(v.w - fitW) > 0.5 || Math.abs(v.h - fitH) > 0.5) fit();
+}, 250);
 fit();
 
 // 터치 기기 판정: 터치 버튼은 터치 기기에서만 보인다

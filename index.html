@@ -13,9 +13,9 @@
       --red: #D62B1F; --gold: #F2B632; --navy: #14213D; --paper: #F7F3E8; --ink: #1B1B1B;
       --kr: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
     }
-    html, body { margin: 0; height: 100%; background: #0b0f1c; overflow: hidden; }
+    html, body { margin: 0; width: 100%; height: 100%; background: #0b0f1c; overflow: hidden; position: fixed; inset: 0; overscroll-behavior: none; }
     body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font-family: "Pretendard", var(--kr); }
-    #stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform-origin: 50% 50%; }
+    #stage { position: fixed; left: 50%; top: 50%; width: 1280px; height: 720px; transform-origin: 50% 50%; }
     #game { position: absolute; inset: 0; width: 1280px; height: 720px; display: block; background: var(--navy); }
 
     /* 터치 버튼: 터치 기기 + 경기 중에만 보임 */
